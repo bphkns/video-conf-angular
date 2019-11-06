@@ -1,0 +1,61 @@
+.container {
+  display: grid;
+  padding-top: 2rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  width: auto;
+  gap: 1rem;
+  grid-template-columns: 1.5fr 1fr;
+}
+
+.primary-camera {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 75%;
+}
+
+.primary-video {
+  width: 100%;
+  transform: scale(-1, 1);
+  transform-origin: 50% 50%;
+  z-index:3;
+}
+
+.overlay-primary {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-image: linear-gradient(to right, lightgrey, darkgrey);
+  z-index: 4;
+}
+
+.overlay-controls {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 4;
+}
+
+.overlay-controls .controls-container {
+    width: 100%;
+    background:rgb(63, 62, 62);
+}
+
+
+.secondary-camera-cotainer {
+  background-color: lightgray;
+}
+
+.secondary-camera {
+  position: relative;
+  width: 15rem;
+  height: 11.25rem;
+  margin: 0.5rem;
+}
+
+.remote-video {
+  width: 100%;
+  transform: scale(-1, 1);
+  transform-origin: 50% 50%;
+}
