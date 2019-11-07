@@ -29,8 +29,7 @@ export class AppService {
     });
 
     stream.getTracks().forEach(track => {
-      console.log(track);
-      this.selfConnection.addTrack(track);
+      this.selfConnection.addTrack(track, stream);
     });
     this.addLocalICECandidate();
     this.addRemoteICECandidate();
@@ -42,48 +41,52 @@ export class AppService {
 
   addLocalICECandidate() {
     this.selfConnection.onicecandidate = (event) => {
-      this.socket.emit('candidate', { id: this.socket.ioSocket.id, event: event.candidate });
+      this.socket.emit('candidate', { from: this.socket.ioSocket.id, candidate: event.candidate, type: 'local' });
     };
   }
 
   addRemoteICECandidate() {
     this.remoteConnection.onicecandidate = (event) => {
-      this.socket.emit('candidate', { id: this.socket.ioSocket.id, event: event.candidate });
+      this.socket.emit('candidate', { from: this.socket.ioSocket.id, candidate: event.candidate, type: 'remote' });
     };
   }
 
   setCandidate() {
     this.socket.on('candidate', data => {
-      if (data.from !== this.socket.ioSocket.id) {
-        this.selfConnection.addIceCandidate(data.candidate);
-      }
+      if (data.candidate !== null) {
+        switch (data.type) {
+          case 'local':
+            this.remoteConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            break;
 
-      this.remoteConnection.addIceCandidate(data.candidate);
+          case 'remote':
+            this.selfConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            break;
+        }
+      }
     });
   }
 
   createLocalOffer() {
     this.selfConnection.createOffer().then(desc => {
-      this.socket.emit('offer', { from: this.socket.ioSocket.id, sdp: desc.sdp });
-      this.selfConnection.setLocalDescription(desc);
-      this.remoteConnection.setRemoteDescription(desc);
+      this.socket.emit('offer', { from: this.socket.ioSocket.id, desc });
+      this.selfConnection.setLocalDescription(new RTCSessionDescription(desc));
     });
   }
 
   getRemoteOffer() {
     this.socket.on('offer', data => {
-      this.remoteConnection.setLocalDescription(data.sdp);
-      this.selfConnection.setRemoteDescription(data.sdp);
-      this.selfConnection.createAnswer().then(desc => {
-        this.socket.emit('answer', { from: this.socket.ioSocket.id, sdp: desc.sdp });
+      this.remoteConnection.setRemoteDescription(new RTCSessionDescription(data.desc));
+      this.remoteConnection.createAnswer().then(desc => {
+        this.remoteConnection.setLocalDescription(new RTCSessionDescription(desc));
+        this.socket.emit('answer', { from: this.socket.ioSocket.id, desc });
       });
     });
   }
 
   getAnswer() {
     this.socket.on('answer', data => {
-      this.remoteConnection.setLocalDescription(data.sdp);
-      this.selfConnection.setRemoteDescription(data.sdp);
+      this.selfConnection.setRemoteDescription(new RTCSessionDescription(data.desc));
     });
   }
 }

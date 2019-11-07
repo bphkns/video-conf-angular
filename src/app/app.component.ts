@@ -34,6 +34,7 @@ export class AppComponent implements AfterViewInit {
       this.primaryCamOverlay.nativeElement.remove();
       this.appService.remoteConnection.ontrack = track => {
         console.log(track);
+        (this.remoteCam.nativeElement as HTMLMediaElement).srcObject = track.streams[0];
       };
     });
   }

@@ -10,7 +10,7 @@ import { AppService } from './app.service';
 
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 
-const config: SocketIoConfig = { url: 'http://localhost:3000', options: {} };
+const config: SocketIoConfig = { url: 'https://bphkns-rtc.herokuapp.com/', options: {} };
 
 @NgModule({
   declarations: [
