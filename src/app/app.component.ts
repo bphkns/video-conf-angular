@@ -32,9 +32,13 @@ export class AppComponent implements AfterViewInit {
       this.primaryCam.nativeElement.srcObject = stream;
       this.displayPrimaryControls = true;
       this.primaryCamOverlay.nativeElement.remove();
-      this.appService.remoteConnection.ontrack = track => {
-        console.log(track);
-        (this.remoteCam.nativeElement as HTMLMediaElement).srcObject = track.streams[0];
+      // tslint:disable-next-line: no-shadowed-variable
+      this.appService.remoteConnection.ontrack = event => {
+        if (event.streams[0] !== (this.remoteCam.nativeElement as HTMLMediaElement).srcObject) {
+          console.log(this.remoteCam.nativeElement);
+          console.log(event);
+          (this.remoteCam.nativeElement as HTMLMediaElement).srcObject = event.streams[0];
+        }
       };
     });
   }
