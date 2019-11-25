@@ -1,0 +1,33 @@
+<div class="login-wrapper">
+    <form class="login">
+        <section class="title">
+            <h3 class="welcome">Welcome to</h3> Tyrannus Online Seminary
+        </section>
+        <div class="login-group">
+            <clr-select-container>
+                <label class="clr-sr-only">User Role</label>
+                <select clrSelect name="type" [(ngModel)]="form.type">
+                    <option value="student">Student</option>
+                    <option value="teacher">Teacher</option>
+                </select>
+            </clr-select-container>
+            <clr-input-container>
+                <label class="clr-sr-only">Username</label>
+                <input type="text" name="username" clrInput placeholder="Username" [(ngModel)]="form.email"/>
+            </clr-input-container>
+            <clr-password-container>
+                <label class="clr-sr-only">Password</label>
+                <input type="password" name="password" clrPassword placeholder="Password" [(ngModel)]="form.password"/>
+            </clr-password-container>
+            <clr-checkbox-wrapper>
+                <label>Remember me</label>
+                <input type="checkbox" name="rememberMe" clrCheckbox [(ngModel)]="form.rememberMe"/>
+            </clr-checkbox-wrapper>
+            <div *ngIf="showError.length" class="error active">
+                {{ showError }}
+            </div>
+            <button type="submit" class="btn btn-primary" (click)="signup()">Sign Up</button>
+            <a href="javascript://" [routerLink]="['/login']" class="signup">Already have an account ? Login</a>
+        </div>
+    </form>
+</div>

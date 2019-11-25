@@ -1,0 +1,24 @@
+<div class="clr-row">
+    <form clrStepper [formGroup]="form" (ngSubmit)="submit()">
+        <clr-stepper-panel formGroupName="name">
+            <clr-step-title>Subject</clr-step-title>
+            <clr-step-description>What's the name of the Subject ?</clr-step-description>
+            <clr-step-content *clrIfExpanded>
+                <clr-input-container>
+                    <label>Subject Name</label>
+                    <input clrInput formControlName="subject" />
+                    <clr-control-error *clrIfError="'required'">Subject Name Required</clr-control-error>
+                </clr-input-container>
+
+                <button clrStepButton="next">next</button>
+            </clr-step-content>
+        </clr-stepper-panel>
+
+        <clr-stepper-panel formGroupName="start">
+            <clr-step-title>Start</clr-step-title>
+            <clr-step-content *clrIfExpanded>
+                <button clrStepButton="submit">Start</button>
+            </clr-step-content>
+        </clr-stepper-panel>
+    </form>
+</div>

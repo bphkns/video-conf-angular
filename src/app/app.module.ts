@@ -1,33 +1,44 @@
-import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ClarityModule } from '@clr/angular';
+import { SocketIoConfig, SocketIoModule } from 'ngx-socket-io';
+import { environment } from '../environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatToolbarModule, MatButtonModule, MatIconModule } from '@angular/material';
-import { FormsModule } from '@angular/forms';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { ViewClassComponent } from './view-class/view-class.component';
+import { ViewClassService } from './view-class/view-class.service';
+import { HttpClientModule } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { TeacherComponent } from './view-class/teacher/teacher.component';
+import { StudentComponent } from './view-class/student/student.component';
+import { TeacherService } from './view-class/teacher/teacher.service';
+import { StudentService } from './view-class/student/student.service';
 
-import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
-
-const config: SocketIoConfig = { url: 'https://bphkns-rtc.herokuapp.com/', options: {} };
+const config: SocketIoConfig = { url: environment.socketUrl, options: {} };
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ViewClassComponent,
+    TeacherComponent,
+    StudentComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    AuthModule,
+    ClarityModule,
+    SocketIoModule.forRoot(config),
+    CommonModule,
     FlexLayoutModule,
-    MatToolbarModule,
-    MatButtonModule,
-    FormsModule,
-    MatIconModule,
-    SocketIoModule.forRoot(config)
+    HttpClientModule
   ],
-  providers: [AppService],
+  providers: [AppService, ViewClassService, TeacherService, StudentService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,0 +1,29 @@
+<div class="main-container">
+    <div class="alert alert-app-level" fxLayout="row" fxLayoutAlign="center center">
+        <clr-icon shape="info-circle" size="24"></clr-icon> <span>You are a  {{ user.type }}</span>
+    </div>
+    <header class="header header-6">
+        <div class="branding">
+            <a class="nav-link">
+                <clr-icon shape="cloud"></clr-icon>
+                <span class="title">Tyrannus Online Seminary</span>
+            </a>
+        </div>
+        <div class="header-nav">
+            <a href="javascript://" class="nav-link nav-text" [class.active]=" activeClass === 'active-classes'"
+                [routerLink]="['active-classes']" (click)="routeChange('active-classes')" > Active classes</a>
+            <a href="javascript://" *ngIf="showCreateClass" class="nav-link nav-text"
+            [class.active]="activeClass === 'create-class'" (click)="routeChange('create-class')" [routerLink]="['create-class']">Start class</a>
+        </div>
+        <div class="header-actions">
+            <a href="javascript://" class="nav-link nav-icon" aria-label="settings" (click)="logout()">
+                <clr-icon shape="cog"></clr-icon>
+            </a>
+        </div>
+    </header>
+    <div class="content-container">
+        <div class="content-area">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+</div>

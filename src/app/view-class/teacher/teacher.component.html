@@ -1,0 +1,26 @@
+<div class="main-container">
+    <header class="header-6">
+        <div class="branding">
+            <a href="..." class="nav-link">
+                <clr-icon shape="cloud"></clr-icon>
+                <span class="title">Tyrannus Online Seminary | Teacher Portal</span>
+            </a>
+        </div>
+        <div class="header-actions">
+            <button type="button" class="nav-link btn btn-icon btn-success" [disabled]="!enablePlayBtn"
+                aria-label="warning" (click)="start()">
+                <clr-icon shape="play"></clr-icon>
+            </button>
+            <button type="button" *ngIf="classDetails && classDetails.state === 'started'"
+                class="nav-link btn btn-icon btn-warning" aria-label="warning" (click)="endClass()">
+                <clr-icon shape="warning-standard"></clr-icon>
+            </button>
+        </div>
+    </header>
+    <div class="content-container">
+        <div class="canvas"></div>
+        <div class="videos" #videos>
+            <video #teacherVideo autoplay muted class="teacher-video"></video>
+        </div>
+    </div>
+</div>
