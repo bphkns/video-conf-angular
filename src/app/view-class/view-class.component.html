@@ -1,0 +1,39 @@
+<div class="main-container">
+    <div class="alert alert-app-level" fxLayout="row" fxLayoutAlign="center center">
+        <clr-icon shape="info-circle" size="24"></clr-icon> <span>You are a {{ user.type }}</span>
+    </div>
+    <header class="header-6">
+        <div class="branding">
+            <a href="..." class="nav-link">
+                <clr-icon shape="cloud"></clr-icon>
+                <span class="title">Tyrannus Online Seminary</span>
+            </a>
+        </div>
+        <div class="header-actions">
+            <button type="button" class="nav-link btn btn-icon btn-success" [disabled]="!enablePlayBtn || playDisbaled"
+                aria-label="warning" (click)="start()">
+                <clr-icon shape="play"></clr-icon>
+            </button>
+            <button type="button" class="nav-link btn btn-icon btn-warning" aria-label="warning"
+                (click)="recieveTeacherVideo()">
+                <clr-icon shape="warning-standard"></clr-icon>
+            </button>
+        </div>
+    </header>
+    <div class="content-container">
+        <div class="canvas"></div>
+        <div class="videos" #videos>
+            <div class="teacher-video" *ngIf="classState==='paused'" [ngStyle]="{ 'max-height': '10rem' }">
+                <div fxFlex fxLayout="row" fxLayoutAlign="center center">
+                    Video paused. Teacher might be disconnected
+                </div>
+            </div>
+            <div class="teacher-video" *ngIf="classState==='ended'" [ngStyle]="{ 'max-height': '10rem' }">
+                <div fxFlex fxLayout="row" fxLayoutAlign="center center">
+                    Video paused. Teacher might be disconnected
+                </div>
+            </div>
+            <video #teacherVideo *ngIf="classState==='started'" autoplay muted class="teacher-video"></video>
+        </div>
+    </div>
+</div>

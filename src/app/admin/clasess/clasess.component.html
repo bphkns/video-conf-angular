@@ -1,0 +1,148 @@
+<clr-alert [clrAlertType]="'success'" *ngIf="classCreated">
+    <clr-alert-item>
+        <span class="alert-text">
+            Class Created
+        </span>
+    </clr-alert-item>
+</clr-alert>
+
+<clr-alert [clrAlertType]="'danger'" *ngIf="classDeleted">
+    <clr-alert-item>
+        <span class="alert-text">
+            Classroom deleted
+        </span>
+    </clr-alert-item>
+</clr-alert>
+
+<clr-datagrid>
+    <clr-dg-action-bar>
+        <div class="btn-group">
+            <button type="button" (click)="addClass()" class="btn btn-sm btn-secondary">
+                <clr-icon shape="plus"></clr-icon> Add new class
+            </button>
+        </div>
+    </clr-dg-action-bar>
+
+    <clr-dg-column>Name
+        <clr-dg-string-filter [clrDgStringFilter]="emailFilter"></clr-dg-string-filter>
+    </clr-dg-column>
+    <clr-dg-column>Teacher
+        <clr-dg-string-filter [clrDgStringFilter]="emailFilter"></clr-dg-string-filter>
+    </clr-dg-column>
+    <clr-dg-column [clrDgField]="'createdAt'" [clrDgSortOrder]="descSort">Creation date</clr-dg-column>
+    <clr-dg-column [clrDgField]="'endedAt'" [clrDgSortOrder]="descSort">End Date</clr-dg-column>
+
+    <clr-dg-row *clrDgItems="let class of classes">
+        <clr-dg-action-overflow>
+            <button class="action-item" (click)="showEditPopup(class)">Edit</button>
+            <button class="action-item" (click)="onDelete(class)">Delete</button>
+        </clr-dg-action-overflow>
+        <clr-dg-cell>{{class.subject.name}}</clr-dg-cell>
+        <clr-dg-cell>{{class.teacher.username}}</clr-dg-cell>
+        <clr-dg-cell>{{class.createdAt | date}}</clr-dg-cell>
+        <clr-dg-cell>
+            {{class.endedAt | date}}
+            <div *ngIf="!class.endedAt" class="blink">
+                Live
+            </div>
+        </clr-dg-cell>
+    </clr-dg-row>
+
+    <clr-dg-footer>
+        <clr-dg-pagination #pagination [clrDgPageSize]="5">
+            <clr-dg-page-size [clrPageSizeOptions]="[5,10,20,50,100]">Classes per page</clr-dg-page-size>
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+            of {{classes.length}} classes
+        </clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>
+
+
+<clr-wizard #wizardlg [(clrWizardOpen)]="addingClass" clrWizardSize="lg">
+    <clr-wizard-title>Create a classroom</clr-wizard-title>
+
+    <clr-wizard-button [type]="'cancel'">Cancel</clr-wizard-button>
+    <clr-wizard-button [type]="'previous'">Back</clr-wizard-button>
+    <clr-wizard-button [type]="'next'" (click)="getTeachers()">Next</clr-wizard-button>
+    <clr-wizard-button [type]="'finish'" (click)="createClass()">Finish</clr-wizard-button>
+
+    <clr-wizard-page [clrWizardPageNextDisabled]="name.pristine || !formPageOne.valid">
+        <ng-template clrPageTitle>Provide class name</ng-template>
+        <form clrForm #formPageOne="ngForm">
+            <clr-input-container>
+                <label>Name</label>
+                <input clrInput required [(ngModel)]="classDetails.name" name="name" #name="ngModel" />
+                <clr-control-error>This field is required!</clr-control-error>
+            </clr-input-container>
+        </form>
+
+    </clr-wizard-page>
+
+    <clr-wizard-page>
+        <ng-template clrPageTitle>Assign Teacher</ng-template>
+        <clr-datagrid [(clrDgSingleSelected)]="selectedTeacher" [clrDgRowSelection]="true">
+            <clr-dg-column>
+                Name
+                <clr-dg-string-filter [clrDgStringFilter]="emailFilter"></clr-dg-string-filter>
+            </clr-dg-column>
+            <clr-dg-column>
+                Email
+                <clr-dg-string-filter [clrDgStringFilter]="emailFilter"></clr-dg-string-filter>
+            </clr-dg-column>
+
+            <clr-dg-row *clrDgItems="let teacher of teachers" [clrDgItem]="teacher">
+                <clr-dg-cell>{{ teacher.name}} </clr-dg-cell>
+                <clr-dg-cell>{{ teacher.email}} </clr-dg-cell>
+            </clr-dg-row>
+            <clr-dg-footer>
+                <clr-dg-pagination #pagination [clrDgPageSize]="5">
+                    <clr-dg-page-size [clrPageSizeOptions]="[5,10,20,50,100]">Teachers per page</clr-dg-page-size>
+                    {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+                    of {{teachers.length}} teachers
+                </clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </clr-wizard-page>
+</clr-wizard>
+
+
+<clr-modal [(clrModalOpen)]="deletingClass" [clrModalSize]="'sm'">
+    <h3 class="modal-title">Do you really want to delete ?</h3>
+    <div *ngIf="deletingClass" class="modal-body">
+        <p class="p1">You are deleteing this class:
+            <code class="language-html">{{ deletingClass.subject.name }}</code></p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="deletingClass = undefined">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="deleteClass()">Delete</button>
+    </div>
+</clr-modal>
+
+
+
+<clr-modal [(clrModalOpen)]="editingClass" [clrModalSize]="'lg'">
+    <h3 class="modal-title">Edit Class</h3>
+    <div class="modal-body">
+        <form clrForm #editForm="ngForm">
+            <div class="clr-row clr-justify-content-center">
+                <clr-input-container>
+                    <label>Name</label>
+
+                    <input clrInput [disabled]="!editing.name" type="text" [(ngModel)]="editClassname" name="editClassname"
+                        required #editName="ngModel" />
+                    <clr-control-error>Name Required</clr-control-error>
+
+                </clr-input-container>
+                <div class="clr-row clr-align-items-center">
+                    <button class="btn btn-icon" (click)="startEdit('name')">
+                        <clr-icon shape="pencil" class="is-solid" size="16"></clr-icon>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn" (click)="editingClass = false">CANCEL</button>
+        <button type="button" class="btn" [disabled]="editName.pristine || !editForm.valid" (click)="updateClass()">SAVE</button>
+    </div>
+</clr-modal>

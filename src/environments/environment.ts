@@ -3,7 +3,10 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  url: 'https://bikash-phukan.codes:3000/api',
+  socketUrl: 'https://bikash-phukan.codes:3000/',
+  USER_DB: 'USER_DB',
 };
 
 /*

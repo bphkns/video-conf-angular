@@ -1,0 +1,83 @@
+<div class="main-container">
+    <header class="header-6">
+        <div class="branding">
+            <a href="/" class="nav-link">
+                <clr-icon shape="cloud"></clr-icon>
+                <span class="title">Tyrannus Online Seminary | Teacher Portal</span>
+            </a>
+        </div>
+        <div class="header-nav" *ngIf="classDetails">
+            <a href="javascript://" class="nav-link nav-text"> {{ classDetails.subject.name }} </a>
+        </div>
+        <div class="header-actions">
+            <button type="button" class="nav-link btn btn-icon btn-success" [disabled]="!enablePlayBtn"
+                aria-label="warning" (click)="start()">
+                <clr-icon shape="play"></clr-icon>
+            </button>
+            <button type="button" *ngIf="classDetails && classDetails.state === 'started'"
+                class="nav-link btn btn-icon btn-warning" aria-label="warning" (click)="endClass()">
+                <clr-icon shape="warning-standard"></clr-icon>
+            </button>
+        </div>
+    </header>
+    <div class="content-container">
+        <div class="canvas">
+            <div #canvasParent class="canvas-parent">
+                <!-- <ng-container #textboxContainer></ng-container> -->
+                <canvas #canvas id="canvas" class="whiteboard"></canvas>
+            </div>
+            <div class="toolbar">
+                <clr-dropdown [clrCloseMenuOnItemClick]="true">
+                    <button class="btn" clrDropdownTrigger aria-label="Dropdown demo button">
+                        <clr-icon shape="pencil" size="24"></clr-icon>
+                        <clr-icon shape="caret down"></clr-icon>
+                    </button>
+                    <clr-dropdown-menu *clrIfOpen>
+                        <label class="dropdown-header" aria-hidden="true">Choose Pencil Size</label>
+                        <div class="line-size-1" clrDropdownItem (click)="changePencilSize(2)">Line 1 </div>
+                        <div class="line-size-2" clrDropdownItem (click)="changePencilSize(6)">Line 2</div>
+                        <div class="line-size-3" clrDropdownItem (click)="changePencilSize(12)">Line 3</div>
+                    </clr-dropdown-menu>
+                </clr-dropdown>
+                <clr-dropdown [clrCloseMenuOnItemClick]="false">
+                    <button class="btn" clrDropdownTrigger aria-label="Dropdown demo button">
+                        <clr-icon shape="cog" size="24"></clr-icon>
+                        <clr-icon shape="caret down"></clr-icon>
+                    </button>
+                    <clr-dropdown-menu *clrIfOpen>
+                        <label class="dropdown-header" aria-hidden="true">Color</label>
+                        <div clrDropdownItem fxLayout="row" fxLayoutAlign="space-between center">Choose Pencil Color
+                            <clr-icon shape="color-picker" class="is-solid" [(colorPicker)]="pencilColor"
+                                (colorPickerChange)="changeColor($event)" size="16" [style.background]="pencilColor">
+                            </clr-icon>
+                        </div>
+                        <div class="dropdown-divider" role="separator" aria-hidden="true"></div>
+                        <div clrDropdownItem>Choose Background Color
+                            <clr-icon shape="color-picker" class="is-solid" [(colorPicker)]="canvasBackgroundColor"
+                                (colorPickerChange)="changeBackgroundColor($event)" size="16"
+                                [style.background]="canvasBackgroundColor">
+                            </clr-icon>
+                        </div>
+                    </clr-dropdown-menu> 
+                </clr-dropdown>
+
+                <!-- <input type="file" #file style="display: none;" (change)="handleFileInput($event.target.files)">
+                <button type="button" class="btn" (click)="file.click()">
+                    <clr-icon shape="image" class="has-badge is-solid" size="24"></clr-icon>
+                </button> -->
+                <button type="button" class="btn" (click)="eraseDrawing()">
+                    <clr-icon shape="eraser" size="24" class="is-solid"></clr-icon>
+                </button>
+                <!-- <button type="button" class="btn" (click)="addTextBox()">
+                    <clr-icon shape="add-text" size="24"></clr-icon>
+                </button> -->
+                <button type="button" class="btn" (click)="clearDrawing()">
+                    <clr-icon shape="times-circle" size="24"></clr-icon>
+                </button>
+            </div>
+        </div>
+        <div class="videos" #videos>
+            <video cdkOverlayOrigin #teacherVideo (mouseenter) ="showControls()" (mouseleave)="hideControls()" autoplay class="teacher-video"></video>
+        </div>
+    </div>
+</div>

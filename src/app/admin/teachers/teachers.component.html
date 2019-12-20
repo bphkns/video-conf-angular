@@ -1,0 +1,106 @@
+<clr-alert [clrAlertType]="'success'" *ngIf="teacherCreated">
+    <clr-alert-item>
+        <span class="alert-text">
+            Teacher Created
+        </span>
+    </clr-alert-item>
+</clr-alert>
+<clr-alert [clrAlertType]="'danger'" *ngIf="teacherDeleted">
+    <clr-alert-item>
+        <span class="alert-text">
+            Teacher deleted
+        </span>
+    </clr-alert-item>
+</clr-alert>
+
+
+<clr-datagrid>
+    <clr-dg-action-bar>
+        <div class="btn-group">
+            <button type="button" (click)="addTeacher()" class="btn btn-sm btn-secondary">
+                <clr-icon shape="plus"></clr-icon> Add new Teacher
+            </button>
+        </div>
+    </clr-dg-action-bar>
+    <clr-dg-column [clrDgField]="'name'" [clrDgSortOrder]="descSort">
+        Name
+        <clr-dg-string-filter [clrDgStringFilter]="emailFilter"></clr-dg-string-filter>
+    </clr-dg-column>
+    <clr-dg-column [clrDgField]="'email'" [clrDgSortOrder]="descSort">
+        Email
+        <clr-dg-string-filter [clrDgStringFilter]="emailFilter"></clr-dg-string-filter>
+    </clr-dg-column>
+    <clr-dg-column [clrDgField]="'createdAt'" [clrDgSortOrder]="descSort">Joined At</clr-dg-column>
+
+    <clr-dg-row *clrDgItems="let teacher of teachers">
+        <clr-dg-action-overflow>
+            <!-- <button class="action-item">Edit</button> -->
+            <button class="action-item" (click)="onDelete(teacher)">Delete</button>
+        </clr-dg-action-overflow>
+        <clr-dg-cell> {{ teacher.name }} </clr-dg-cell>
+        <clr-dg-cell>{{teacher.email}}</clr-dg-cell>
+        <clr-dg-cell>
+            {{teacher.createdAt | date}}
+        </clr-dg-cell>
+    </clr-dg-row>
+
+    <clr-dg-footer>
+        <clr-dg-pagination #pagination [clrDgPageSize]="5">
+            <clr-dg-page-size [clrPageSizeOptions]="[5,10,20,50,100]">Teachers per page</clr-dg-page-size>
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+            of {{teachers.length}} teachers
+        </clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>
+
+<clr-wizard #wizardlg [(clrWizardOpen)]="addingTeacher" clrWizardSize="lg">
+    <clr-wizard-title>Add a Teacher</clr-wizard-title>
+
+    <clr-wizard-button [type]="'cancel'">Cancel</clr-wizard-button>
+    <clr-wizard-button [type]="'previous'">Back</clr-wizard-button>
+    <clr-wizard-button [type]="'next'">Next</clr-wizard-button>
+    <clr-wizard-button [type]="'finish'" (click)="createTeacher()">Add</clr-wizard-button>
+
+    <clr-wizard-page [clrWizardPageNextDisabled]="!formPageOne.valid">
+        <ng-template clrPageTitle>Add Teacher</ng-template>
+        <form clrForm #formPageOne="ngForm">
+            <clr-input-container>
+                <label class="clr-sr-only">Email</label>
+                <input type="email" name="email" clrInput placeholder="email" [(ngModel)]="form.email" #email="ngModel"
+                    required email />
+                <clr-control-error>This field is required!</clr-control-error>
+            </clr-input-container>
+            <clr-input-container>
+                <label class="clr-sr-only">Email</label>
+                <input type="name" name="name" clrInput placeholder="Name" [(ngModel)]="form.name" #name="ngModel"
+                    required />
+                <clr-control-error>This field is required!</clr-control-error>
+            </clr-input-container>
+            <clr-password-container>
+                <label class="clr-sr-only">Password</label>
+                <input type="password" name="password" clrPassword placeholder="Password" #password="ngModel"
+                    [(ngModel)]="form.password" required />
+                <clr-control-error>This field is required!</clr-control-error>
+            </clr-password-container>
+        </form>
+    </clr-wizard-page>
+    <clr-wizard-page>
+        <ng-template clrPageTitle>Verify Details </ng-template>
+        <h2 class="h2">Teacher to Add</h2>
+        <p class="p1"> Name: {{ form.name }} </p>
+        <p class="p1"> Email: {{ form.email }} </p>
+    </clr-wizard-page>
+</clr-wizard>
+
+
+<clr-modal [(clrModalOpen)]="deletingTeacher" [clrModalSize]="'sm'">
+    <h3 class="modal-title">Do you really want to delete ?</h3>
+    <div *ngIf="deletingTeacher" class="modal-body">
+        <p class="p1">You are deleteing teacher with email: <code
+                class="language-html">{{ deletingTeacher.email }}</code></p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="deletingTeacher = undefined">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="deleteTeacher()">Delete</button>
+    </div>
+</clr-modal>
