@@ -4,6 +4,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { ViewClassComponent } from './view-class/view-class.component';
 import { TeacherComponent } from './view-class/teacher/teacher.component';
 import { StudentComponent } from './view-class/student/student.component';
+import { AdminGuard } from './auth/admin.guard';
 
 
 const routes: Routes = [
@@ -17,6 +18,13 @@ const routes: Routes = [
     loadChildren: () => import('./dashboard/dashboard.module').then(mod => mod.DashboardModule),
     canLoad: [
       AuthGuard
+    ]
+  },
+  {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.module').then(mod => mod.AdminModule),
+    canLoad: [
+      AdminGuard
     ]
   },
   {

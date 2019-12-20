@@ -8,6 +8,7 @@ import { RegisterComponent } from './register/register.component';
 import { FormsModule } from '@angular/forms';
 import { ClarityModule } from '@clr/angular';
 import { HttpClientModule } from '@angular/common/http';
+import { AdminGuard } from './admin.guard';
 
 const routes: Routes = [
   {
@@ -18,10 +19,6 @@ const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent
-  },
-  {
-    path: 'register',
-    component: RegisterComponent
   }
 ];
 
@@ -38,7 +35,7 @@ const routes: Routes = [
     ClarityModule,
   ],
   providers: [
-    AuthService, AuthGuard
+    AuthService, AuthGuard, AdminGuard
   ]
 })
 export class AuthModule { }

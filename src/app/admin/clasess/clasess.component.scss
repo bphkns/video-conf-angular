@@ -1,0 +1,26 @@
+.blink {
+  animation: blinkingText 1.5s infinite;
+  font-weight: bold;
+}
+@keyframes blinkingText {
+  0% {
+    color: green;
+  }
+  25% {
+    color: transparent;
+  }
+  50% {
+    color: transparent;
+  }
+  75% {
+    color: green;
+  }
+  100% {
+    color: green;
+  }
+}
+
+
+.edit-icon {
+  cursor: pointer;
+}

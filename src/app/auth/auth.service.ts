@@ -12,9 +12,9 @@ export class AuthService {
     isTeacher = new BehaviorSubject<boolean>(false);
     constructor(private httpClient: HttpClient) { }
 
-    signUp(userInfo: { email: string, password: string, type: string, rememberMe: boolean }) {
-        const { email, password, type, rememberMe } = userInfo;
-        return this.httpClient.post(`${environment.url}/users`, { email, password, type });
+    signUp(userInfo: { email: string, password: string, type: string, rememberMe?: boolean, name: string }) {
+        const { email, password, type, name } = userInfo;
+        return this.httpClient.post(`${environment.url}/users`, { email, password, type, name });
     }
 
     login(userInfo: { username: string, password: string, rememberMe: boolean }) {

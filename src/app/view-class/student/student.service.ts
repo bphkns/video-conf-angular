@@ -72,4 +72,25 @@ export class StudentService {
         return this.socket.fromEvent('other-student-video-resumed');
     }
 
+    getOtherStudents({ userId, classId }) {
+        this.socket.emit('get-already-joined-students', { classId, userId });
+        return this.socket.fromEvent('got-already-joined-students');
+    }
+
+    studentDisconnected() {
+        return this.socket.fromEvent('other-student-disconnected');
+    }
+
+    getDrawingBoard({ classId }) {
+        this.socket.emit('get-drawingboard', { classId });
+        return this.socket.fromEvent('take-drawingboard');
+    }
+
+    rcvDrawing() {
+        return this.socket.fromEvent('drawing-data');
+    }
+
+    clearDrawing() {
+        return this.socket.fromEvent('clear-drawing');
+    }
 }

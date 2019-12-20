@@ -29,11 +29,11 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
-    this.authService.signUp(this.form).subscribe(user => {
-      this.router.navigate(['/login'], { queryParams: { userRegisterSuccess: true } });
-    }, error => {
-      this.showError = error.error.message;
-    });
+    // this.authService.signUp(this.form).subscribe(user => {
+    //   this.router.navigate(['/login'], { queryParams: { userRegisterSuccess: true } });
+    // }, error => {
+    //   this.showError = error.error.message;
+    // });
   }
 
 }

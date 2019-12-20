@@ -1,0 +1,48 @@
+<div class="main-container">
+    <header class="header-6">
+        <div class="branding">
+            <div class="branding">
+                <a href="..." class="nav-link">
+                    <clr-icon shape="cloud"></clr-icon>
+                    <span class="title">Tyrannus Online Seminary</span>
+                </a>
+            </div>
+        </div>
+        <div class="header-actions">
+            <clr-dropdown>
+                <button class="nav-text" clrDropdownTrigger aria-label="open user profile">
+                    {{ user.username }}
+                    <clr-icon shape="caret down"></clr-icon>
+                </button>
+                <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
+                    <a [routerLink]="'/dashboard'" clrDropdownItem>Go To Dashboard</a>
+                    <a href="javascript://" (click)="logout()" clrDropdownItem>Log out</a>
+                </clr-dropdown-menu>
+            </clr-dropdown>
+        </div>
+    </header>
+    <div class="content-container">
+        <div class="content-area">
+            <router-outlet></router-outlet>
+        </div>
+        <nav class="sidenav">
+            <section class="sidenav-content">
+                <a routerLink="overview" (click)="routeChange('overview')" class="nav-link"
+                    [ngClass]="{ active: activeRoute === 'overview' }">
+                    Overview
+                </a>
+                <a routerLink="classes" class="nav-link" (click)="routeChange('classes')"
+                    [ngClass]="{ active: activeRoute === 'classes' }">
+                    Classes
+                </a>
+                <a routerLink="students" class="nav-link" (click)="routeChange('students')"
+                    [ngClass]="{ active: activeRoute === 'students' }">
+                    Students
+                </a>
+                <a routerLink="teachers" class="nav-link" (click)="routeChange('teachers')"
+                    [ngClass]="{ active: activeRoute === 'teachers' }">
+                    Teachers
+                </a>
+            </section>
+        </nav>
+    </div>

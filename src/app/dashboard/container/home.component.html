@@ -1,6 +1,6 @@
 <div class="main-container">
     <div class="alert alert-app-level" fxLayout="row" fxLayoutAlign="center center">
-        <clr-icon shape="info-circle" size="24"></clr-icon> <span>You are a  {{ user.type }}</span>
+        <clr-icon shape="info-circle" size="24"></clr-icon> <span>You are a {{ user.type }}</span>
     </div>
     <header class="header header-6">
         <div class="branding">
@@ -11,14 +11,22 @@
         </div>
         <div class="header-nav">
             <a href="javascript://" class="nav-link nav-text" [class.active]=" activeClass === 'active-classes'"
-                [routerLink]="['active-classes']" (click)="routeChange('active-classes')" > Active classes</a>
+                [routerLink]="['active-classes']" (click)="routeChange('active-classes')"> Active classes</a>
             <a href="javascript://" *ngIf="showCreateClass" class="nav-link nav-text"
-            [class.active]="activeClass === 'create-class'" (click)="routeChange('create-class')" [routerLink]="['create-class']">Start class</a>
+                [class.active]="activeClass === 'create-class'" (click)="routeChange('create-class')"
+                [routerLink]="['create-class']">Start class</a>
         </div>
         <div class="header-actions">
-            <a href="javascript://" class="nav-link nav-icon" aria-label="settings" (click)="logout()">
-                <clr-icon shape="cog"></clr-icon>
-            </a>
+            <clr-dropdown>
+                <button class="nav-text" clrDropdownTrigger aria-label="open user profile">
+                    {{ user.username }}
+                    <clr-icon shape="caret down"></clr-icon>
+                </button>
+                <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
+                    <a [routerLink]="'/admin'" *ngIf="user.isAdmin" clrDropdownItem>Go to Admin Panel</a>
+                    <a href="javascript://" (click)="logout()" clrDropdownItem>Log out</a>
+                </clr-dropdown-menu>
+            </clr-dropdown>
         </div>
     </header>
     <div class="content-container">

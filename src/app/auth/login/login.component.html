@@ -1,7 +1,8 @@
 <div class="login-wrapper">
     <form class="login">
         <section class="title">
-            <h3 class="welcome">Welcome to</h3> Tyrannus Online Seminary
+            <h3 class="welcome">Welcome to</h3>
+            <img src="/assets/logo.jpeg" class="logo" alt="">
         </section>
         <div class="login-group">
             <clr-input-container>
@@ -22,7 +23,7 @@
             <div *ngIf="showError.length" class="error active">
                 {{ showError }}
             </div>
-            <button type="submit" class="btn btn-primary" (click)="submit()" >Log In</button>
+            <button type="submit" class="btn btn-primary" (click)="submit()">Log In</button>
             <a href="javascript://" [routerLink]="['/register']" class="signup">Sign Up</a>
         </div>
     </form>

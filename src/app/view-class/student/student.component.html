@@ -1,32 +1,37 @@
 <div class="main-container">
+    <div class="alert alert-app-level alert-warning" *ngIf="classDetails && classDetails.state==='paused'"
+        fxLayout="row" fxLayoutAlign="center center">
+        <clr-icon class="alert-icon" shape="exclamation-triangle"></clr-icon> <span> Video paused. Teacher might be
+            disconnected</span>
+    </div>
+    <div class="alert alert-app-level alert-warning" *ngIf="classDetails && classDetails.state==='not-started'"
+        fxLayout="row" fxLayoutAlign="center center">
+        <clr-icon class="alert-icon" shape="exclamation-triangle"></clr-icon> <span> Video Not Started</span>
+    </div>
     <header class="header-6">
         <div class="branding">
-            <a href="..." class="nav-link">
+            <a href="/" class="nav-link">
                 <clr-icon shape="cloud"></clr-icon>
                 <span class="title">Tyrannus Online Seminary | Student Portal</span>
             </a>
         </div>
+        <div class="header-nav" *ngIf="classDetails">
+            <a href="javascript://" class="nav-link nav-text"> {{ classDetails.subject.name  }} </a>
+        </div>
         <div class="header-actions">
-                <button type="button" class="nav-link btn btn-icon btn-success" [disabled]="!enablePlayBtn"
-                    aria-label="warning" (click)="rcvTeacherVideo()">
-                    <clr-icon shape="play"></clr-icon>
-                </button>
-            </div>
+            <button type="button" class="nav-link btn btn-icon btn-success" [disabled]="!enablePlayBtn"
+                aria-label="warning" (click)="rcvTeacherVideo()">
+                <clr-icon shape="play"></clr-icon>
+            </button>
+        </div>
     </header>
     <div class="content-container">
-        <div class="canvas"></div>
+        <div #canvasParent class="canvas">
+            <ng-container #textboxContainer></ng-container>
+            <canvas #canvas class="whiteboard"></canvas>
+        </div>
         <div class="videos" #videos>
-            <div class="teacher-video" *ngIf="classDetails && classDetails.state==='paused'" [ngStyle]="{ 'max-height': '10rem' }">
-                <div fxFlex fxLayout="row" fxLayoutAlign="center center">
-                    Video paused. Teacher might be disconnected
-                </div>
-            </div>
-            <div class="teacher-video" *ngIf="classDetails && classDetails.state==='not-started'" [ngStyle]="{ 'max-height': '10rem' }">
-                <div fxFlex fxLayout="row" fxLayoutAlign="center center">
-                    Video Not Started
-                </div>
-            </div>
-            <video  autoplay muted class="teacher-video" #teacherVideo ></video>
+            <video autoplay muted class="teacher-video" #teacherVideo></video>
         </div>
     </div>
 </div>

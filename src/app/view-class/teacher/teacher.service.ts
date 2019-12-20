@@ -68,4 +68,13 @@ export class TeacherService {
     studentDisconnected() {
         return this.socket.fromEvent('student-disconnected');
     }
+
+    sendDrawing({ prevPos, currentPos, classId }) {
+        this.socket.emit('teacher-send-drawing', { prevPos, currentPos, classId });
+    }
+
+
+    clearDrawing({ classId }) {
+        this.socket.emit('clear-drawing', { classId });
+    }
 }
