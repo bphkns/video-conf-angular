@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, Renderer2, ViewChild, ComponentRef, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Component, ComponentFactoryResolver, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Device } from 'mediasoup-client';
 import { Socket } from 'ngx-socket-io';
@@ -6,7 +6,6 @@ import { from } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { AuthService } from '../../auth/auth.service';
 import { StudentService } from './student.service';
-import { TextboxComponent } from '../textbox/textbox.component';
 @Component({
   selector: 'app-student',
   templateUrl: './student.component.html',
@@ -18,7 +17,6 @@ export class StudentComponent implements OnInit, AfterViewInit {
   @ViewChild('videos', { static: false }) videos: ElementRef;
   @ViewChild('canvas', { static: false }) canvas: ElementRef;
   @ViewChild('canvasParent', { static: false }) canvasParent: ElementRef;
-  @ViewChild('textboxContainer', { read: ViewContainerRef, static: false }) textBoxParent: ViewContainerRef;
 
   user: any;
   classId: any;
@@ -32,8 +30,6 @@ export class StudentComponent implements OnInit, AfterViewInit {
   context: CanvasRenderingContext2D;
   audioProducer: any;
   selfVideoStarted = false;
-  mode = 'draw';
-  textBoxMap = new Map<string, ComponentRef<TextboxComponent>>();
 
   constructor(
     private authService: AuthService,
@@ -61,29 +57,6 @@ export class StudentComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    const canvasEl: HTMLCanvasElement = this.canvas.nativeElement;
-    canvasEl.width = this.canvasParent.nativeElement.offsetWidth;
-    canvasEl.height = this.canvasParent.nativeElement.offsetHeight - 10;
-    canvasEl.style.background = 'white';
-
-    this.context = canvasEl.getContext('2d');
-    this.context.lineWidth = 2;
-    this.context.lineCap = 'round';
-    this.context.strokeStyle = '#000';
-
-    this.socket.on('drawing-config', data => {
-      const {
-        lineSize,
-        pencilColor,
-        canvasBackgroundColor,
-        mode
-      } = data;
-
-      this.context.lineWidth = lineSize;
-      this.mode = mode;
-      this.canvas.nativeElement.style.background = canvasBackgroundColor;
-      this.context.strokeStyle = pencilColor;
-    });
   }
 
 
@@ -203,49 +176,6 @@ export class StudentComponent implements OnInit, AfterViewInit {
         classId: this.classDetails.id,
         userId: this.user.id
       });
-    });
-
-    this.studentService.getDrawingBoard({ classId: this.classId })
-      .subscribe((drawData: { config: any, data: [] }) => {
-        const {
-          lineSize,
-          pencilColor,
-          canvasBackgroundColor,
-          mode
-        } = drawData.config;
-        this.context.lineWidth = lineSize;
-        this.mode = mode;
-        this.canvas.nativeElement.style.background = canvasBackgroundColor;
-        this.context.strokeStyle = pencilColor;
-        const dataPairs = drawData.data;
-        dataPairs.forEach(pair => {
-          const { prevPos, currentPos } = pair;
-          this.drawOnCanvas(prevPos, currentPos, this.mode);
-        });
-      });
-
-    this.studentService.rcvDrawing()
-      .subscribe((data: { prevPos: { x: number, y: number }, currentPos: { x: number, y: number } }) => {
-        const { prevPos, currentPos } = data;
-        this.drawOnCanvas(prevPos, currentPos, this.mode);
-      });
-
-    this.socket.on('textbox-created', data => {
-      console.log(data);
-      const { position, id } = data;
-      const textboxFactory = this.resolver.resolveComponentFactory(TextboxComponent);
-      const textbox = this.textBoxParent.createComponent(textboxFactory);
-      this.textBoxMap.set(id, textbox);
-      textbox.instance.color = (this.context.strokeStyle) as string;
-      textbox.instance.id = id;
-      textbox.instance.isStudent = true;
-      textbox.instance.position = position;
-    });
-
-    const canvasEl: HTMLCanvasElement = this.canvas.nativeElement;
-
-    this.studentService.clearDrawing().subscribe(() => {
-      this.context.clearRect(0, 0, canvasEl.width, canvasEl.height);
     });
 
   }
@@ -376,25 +306,5 @@ export class StudentComponent implements OnInit, AfterViewInit {
         rtpCapabilities: this.device.rtpCapabilities
       });
     });
-  }
-
-
-  private drawOnCanvas(prevPos: { x: number, y: number }, currentPos: { x: number, y: number }, mode) {
-    if (!this.context) { return; }
-
-    this.context.beginPath();
-
-    if (prevPos && mode === 'draw') {
-      this.context.globalCompositeOperation = 'source-over';
-      this.context.moveTo(prevPos.x, prevPos.y); // from
-      this.context.lineTo(currentPos.x, currentPos.y);
-      this.context.stroke();
-    }
-
-    if (prevPos && mode === 'erase') {
-      this.context.globalCompositeOperation = 'destination-out';
-      this.context.arc(prevPos.x, prevPos.y, 8, 0, Math.PI * 2, false);
-      this.context.stroke();
-    }
   }
 }

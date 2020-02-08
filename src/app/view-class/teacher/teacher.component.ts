@@ -1,19 +1,17 @@
-import { Component, ElementRef, OnInit, Renderer2, ViewChild, AfterViewInit, HostListener, ViewContainerRef, ComponentFactoryResolver, ComponentRef, NgZone, Input } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Device } from 'mediasoup-client';
-import { from, fromEvent, BehaviorSubject } from 'rxjs';
-import { pairwise, switchMap, takeUntil } from 'rxjs/operators';
-import { AuthService } from '../../auth/auth.service';
-import { TeacherService } from './teacher.service';
-import { Socket } from 'ngx-socket-io';
-import * as AwaitQueue from 'awaitqueue';
-import { TextboxComponent } from '../textbox/textbox.component';
-import { CdkOverlayOrigin, OverlayRef, Overlay, OverlayConfig } from '@angular/cdk/overlay';
+import { CdkOverlayOrigin, Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { AfterViewInit, Component, ElementRef, OnInit, Renderer2, ViewChild, HostListener } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import * as AwaitQueue from 'awaitqueue';
+import { Device } from 'mediasoup-client';
+import { Socket } from 'ngx-socket-io';
+import { from, fromEvent } from 'rxjs';
+import { delay, switchMap } from 'rxjs/operators';
+import { AuthService } from '../../auth/auth.service';
 import { ControlsComponent } from '../controls/controls.component';
+import { TeacherService } from './teacher.service';
 import { fabric } from 'fabric';
-import { EventHandlerService } from './event-handler.service';
-import { CustomFabricObject } from './models';
+import { Options } from 'ng5-slider';
 
 @Component({
   selector: 'app-teacher',
@@ -22,12 +20,24 @@ import { CustomFabricObject } from './models';
 })
 export class TeacherComponent implements OnInit, AfterViewInit {
 
+
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private teacherService: TeacherService,
+    private renderer: Renderer2,
+    private socket: Socket,
+    public overlay: Overlay,
+  ) {
+    this.device = new Device();
+  }
+
   @ViewChild('teacherVideo', { static: false }) teacherVideo: ElementRef;
   @ViewChild('videos', { static: false }) videos: ElementRef;
-  @ViewChild('canvas', { static: false }) canvas: ElementRef;
+  @ViewChild('canvas', { static: false }) canvasDiv: ElementRef;
   @ViewChild('canvasParent', { static: false }) canvasParent: ElementRef;
-  @ViewChild('textboxContainer', { read: ViewContainerRef, static: false }) textBoxParent: ViewContainerRef;
-  // canvas: any;
+  canvas: fabric.Canvas;
   user: any;
   classId: any;
   device: any;
@@ -46,260 +56,135 @@ export class TeacherComponent implements OnInit, AfterViewInit {
   imageFile: File = null;
   mode = 'draw';
   lineSize = 2;
-  textBoxMap = new Map<string, ComponentRef<TextboxComponent>>();
   textBoxCurrX = 0;
   textBoxCurrY = 0;
   overlayRef: OverlayRef;
   @ViewChild(CdkOverlayOrigin, { static: false }) overlayOrigin: CdkOverlayOrigin;
 
+  /**
+   *Canvas Customizeation methods start
+   */
 
-  @Input() set imageDataURL(v: string) {
-    if (v) {
-      this.eventHandler.imageDataUrl = v;
-    }
-  }
-
-
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private teacherService: TeacherService,
-    private renderer: Renderer2,
-    private socket: Socket,
-    private resolver: ComponentFactoryResolver,
-    public overlay: Overlay,
-    public viewContainerRef: ViewContainerRef,
-    private eventHandler: EventHandlerService,
-    private ngZone: NgZone
-  ) {
-    this.device = new Device();
-  }
+  value = 1;
+  options: Options = {
+    floor: 1,
+    ceil: 4
+  };
 
   ngOnInit() {
     this.classId = this.route.snapshot.params.id;
     this.user = this.authService.retrieveUser();
     this.loadDevice();
+
   }
 
   ngAfterViewInit() {
-    const canvasEl: HTMLCanvasElement = this.canvas.nativeElement;
 
-    canvasEl.width = this.canvasParent.nativeElement.offsetWidth;
-    canvasEl.height = this.canvasParent.nativeElement.offsetHeight - 10;
-    canvasEl.style.background = this.canvasBackgroundColor;
-    this.context = canvasEl.getContext('2d');
-    this.context.lineWidth = this.lineSize;
-    this.context.lineCap = 'round';
-    this.context.strokeStyle = this.pencilColor;
-    // this.eventHandler.addBGImageSrcToCanvas();
-    // this.ngZone.runOutsideAngular(() => {
-    //   if (this.eventHandler.canvas) {
-    //     this.eventHandler.canvas.dispose();
-    //   }
-    //   this.canvas = new fabric.Canvas('canvas', {
-    //     selection: false,
-    //     preserveObjectStacking: true,
-    //   });
-    //   this.eventHandler.canvas = this.canvas;
-    //   this.eventHandler.extendToObjectWithId();
-    //   fabric.Object.prototype.objectCaching = false;
-    //   this.addEventListeners();
-    // });
-
-  }
-
-
-  changePencilSize(size) {
-    this.lineSize = size;
-    this.context.lineWidth = size;
-    this.mode = 'draw';
-    this.socket.emit('set-drawing-config', {
-      classId: this.classId,
-      lineSize: this.lineSize,
-      pencilColor: this.pencilColor,
-      canvasBackgroundColor: this.canvasBackgroundColor,
-      mode: this.mode
+    const canvasParentDiv = this.canvasParent.nativeElement as HTMLDivElement;
+    this.canvasDiv.nativeElement.width = canvasParentDiv.offsetWidth;
+    this.canvasDiv.nativeElement.height = canvasParentDiv.offsetHeight;
+    this.canvas = new fabric.Canvas('canvas', {
+      isDrawingMode: true,
+      backgroundColor: this.canvasBackgroundColor
     });
-  }
+    this.canvas.freeDrawingBrush = new fabric.PencilBrush(this.canvas);
+    this.canvas.freeDrawingBrush.width = this.value * 5;
+    this.canvas.freeDrawingBrush.color = this.pencilColor;
 
-  changeColor(value: string) {
-    this.pencilColor = value;
-    this.mode = 'draw';
-    this.context.strokeStyle = this.pencilColor;
-    this.socket.emit('set-drawing-config', {
-      classId: this.classId,
-      lineSize: this.lineSize,
-      pencilColor: this.pencilColor,
-      canvasBackgroundColor: this.canvasBackgroundColor,
-      mode: this.mode
+    // this.setCanvasResize({ width: canvasParentDiv.offsetWidth.toString(), height: canvasParentDiv.offsetHeight.toString() });
+
+    const strategy = this.overlay.position().flexibleConnectedTo(
+      this.overlayOrigin.elementRef.nativeElement
+    ).withPositions([{
+      originX: 'center',
+      originY: 'bottom',
+      overlayX: 'center',
+      overlayY: 'bottom',
+    }]).withPush(false);
+
+    const config = new OverlayConfig({
+      positionStrategy: strategy
     });
-  }
+    this.overlayRef = this.overlay.create(config);
 
-  changeBackgroundColor(value: string) {
-    this.canvasBackgroundColor = value;
-    this.canvas.nativeElement.style.background = this.canvasBackgroundColor;
-    this.socket.emit('set-drawing-config', {
-      classId: this.classId,
-      lineSize: this.lineSize,
-      pencilColor: this.pencilColor,
-      canvasBackgroundColor: this.canvasBackgroundColor,
-      mode: this.mode
-    });
-  }
-
-  eraseDrawing() {
-    this.mode = 'erase';
-    this.socket.emit('set-drawing-config', {
-      classId: this.classId,
-      lineSize: this.lineSize,
-      pencilColor: this.pencilColor,
-      canvasBackgroundColor: this.canvasBackgroundColor,
-      mode: this.mode
-    });
-  }
-
-  addTextBox() {
-    const textboxFactory = this.resolver.resolveComponentFactory(TextboxComponent);
-    const textbox = this.textBoxParent.createComponent(textboxFactory);
-    const textBoxId = Math.random().toString(36).substring(7);
-    this.textBoxMap.set(textBoxId, textbox);
-    textbox.instance.color = this.pencilColor;
-    textbox.instance.id = textBoxId;
-    textbox.instance.position = { x: this.textBoxCurrX, y: this.textBoxCurrY };
-    this.socket.emit('new-textbox-created', {
-      classId: this.classId, id: textBoxId,
-      position: {
-        x: this.textBoxCurrX,
-        y: this.textBoxCurrY
-      }
-    });
-
-    textbox.instance.pressedKey$.subscribe((data: { key: string, id: string }) => {
-      this.socket.emit('text-entered-in-textbox', { ...data });
-    });
-
-    if (
-      this.textBoxCurrX < this.canvasParent.nativeElement.offsetHeight
-      && this.textBoxCurrY < this.canvasParent.nativeElement.offsetHeight - 150
-    ) {
-      this.textBoxCurrY += 100;
-    } else if (
-      this.textBoxCurrX < this.canvasParent.nativeElement.offsetHeight - 150
-      &&
-      this.textBoxCurrY > this.canvasParent.nativeElement.offsetHeight - 150
-    ) {
-      this.textBoxCurrX += 100;
-      this.textBoxCurrY = 10;
-    }
-  }
-
-  wrapText(context, text, x, y, maxWidth, lineHeight) {
-    const words = text.split(' ');
-    let line = '';
-
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + ' ';
-      const metrics = context.measureText(testLine);
-      const testWidth = metrics.width;
-      if (testWidth > maxWidth && n > 0) {
-        context.fillText(line, x, y);
-        line = words[n] + ' ';
-        y += lineHeight;
-      } else {
-        line = testLine;
-      }
-    }
-    context.fillText(line, x, y);
-  }
-
-
-  handleFileInput(files: FileList) {
-    this.imageFile = files.item(0);
-    const image = new Image();
-    image.src = URL.createObjectURL(this.imageFile);
-    image.onload = () => {
-      const canvas = this.context.canvas;
-      image.width = this.canvasParent.nativeElement.offsetWidth;
-      const scale = Math.min(canvas.width / image.width, canvas.height / image.height);
-      // get the top left position of the image
-      const x = (canvas.width / 2) - (image.width / 2) * scale;
-      const y = (canvas.height / 2) - (image.height / 2) * scale;
-      this.context.drawImage(image, x, y, image.width * scale, image.height * scale);
-    };
-  }
-  private captureEvents(canvasEl: HTMLCanvasElement) {
-    // this will capture all mousedown events from the canvas element
-    fromEvent(canvasEl, 'mousedown')
+    fromEvent(
+      (this.teacherVideo.nativeElement as HTMLVideoElement), 'mouseleave')
       .pipe(
-        switchMap((e) => {
-          // after a mouse down, we'll record all mouse moves
-          return fromEvent(canvasEl, 'mousemove')
-            .pipe(
-              // we'll stop (and unsubscribe) once the user releases the mouse
-              // this will trigger a 'mouseup' event
-              takeUntil(fromEvent(canvasEl, 'mouseup')),
-              // we'll also stop (and unsubscribe) once the mouse leaves the canvas (mouseleave event)
-              takeUntil(fromEvent(canvasEl, 'mouseleave')),
-              // pairwise lets us get the previous value to draw a line from
-              // the previous point to the current point
-              pairwise()
-            );
-        })
-      )
-      .subscribe((res: [MouseEvent, MouseEvent]) => {
-        const rect = canvasEl.getBoundingClientRect();
-
-        // previous and current position with the offset
-        const prevPos = {
-          x: res[0].clientX - rect.left,
-          y: res[0].clientY - rect.top
-        };
-
-        const currentPos = {
-          x: res[1].clientX - rect.left,
-          y: res[1].clientY - rect.top
-        };
-
-        // this method we'll implement soon to do the actual drawing
-        this.drawOnCanvas(prevPos, currentPos, this.mode);
+        delay(3000)
+      ).subscribe(event => {
+        this.overlayRef.detach();
       });
   }
 
-  // @HostListener('window:resize')
-  // onWindowResize() {
-  //   const canvasEl: HTMLCanvasElement = this.canvas.nativeElement;
-
-  //   canvasEl.width = this.canvasParent.nativeElement.offsetWidth - 40;
-  //   canvasEl.height = this.canvasParent.nativeElement.offsetHeight - 40;
-
-  //   this.canvasPairs.forEach(pair => {
-  //     this.drawOnCanvas(pair.prevPos, pair.currentPos);
-  //   });
+  // @HostListener('window:resize', ['$event'])
+  // onResize(event) {
+  //   const canvasParentDiv = this.canvasParent.nativeElement as HTMLDivElement;
+  //   this.canvasDiv.nativeElement.width = canvasParentDiv.offsetWidth;
+  //   this.canvasDiv.nativeElement.height = canvasParentDiv.offsetHeight;
+  //   this.setCanvasResize({ width: canvasParentDiv.offsetWidth.toString(), height: canvasParentDiv.offsetHeight.toString() });
   // }
 
-  private drawOnCanvas(prevPos: { x: number, y: number }, currentPos: { x: number, y: number }, mode) {
-    if (!this.context) { return; }
 
-    this.canvasPairs.push({ prevPos, currentPos });
-    this.context.beginPath();
-
-    if (prevPos && mode === 'draw') {
-      this.context.globalCompositeOperation = 'source-over';
-      this.context.moveTo(prevPos.x, prevPos.y); // from
-      this.context.lineTo(currentPos.x, currentPos.y);
-      this.context.stroke();
+  private setCanvasResize({ width, height }: { width: string, height: string }) {
+    console.log(width, height);
+    if (this.canvas) {
+      this.canvas.setDimensions({ width, height });
+      this.canvas.renderAll();
     }
-
-    if (prevPos && mode === 'erase') {
-      this.context.globalCompositeOperation = 'destination-out';
-      this.context.arc(prevPos.x, prevPos.y, 8, 0, Math.PI * 2, false);
-      this.context.stroke();
-    }
-
-    this.teacherService.sendDrawing({ prevPos, currentPos, classId: this.classId });
   }
 
+  clearCanvas() {
+    if (this.canvas) {
+      this.canvas.clear();
+      this.canvas.backgroundColor = this.canvasBackgroundColor;
+      this.canvas.off('mouse:down');
+      this.canvas.isDrawingMode = true;
+    }
+  }
+
+  enterDrawingMode() {
+    this.canvas.isDrawingMode = true;
+    this.canvas.off('mouse:down');
+  }
+
+  canvasSetPencilSize() {
+    this.canvas.freeDrawingBrush.width = this.value * 5;
+  }
+
+  addText() {
+    this.canvas.isDrawingMode = false;
+    this.canvas.on('mouse:down', (options) => {
+      if (options.target == null) {
+        const customText = new fabric.IText('', {
+          top: options.e.offsetY,
+          left: options.e.offsetX,
+          fill: this.canvas.freeDrawingBrush.color
+        });
+        this.canvas.add(customText).setActiveObject(customText);
+        customText.enterEditing();
+      }
+    });
+  }
+
+  changeTextColor() {
+    this.canvas.freeDrawingBrush.color = this.pencilColor;
+  }
+
+  changeBackgroundColor() {
+    this.canvas.backgroundColor = this.canvasBackgroundColor;
+  }
+
+  handleFileInput(files: FileList) {
+    this.canvas.isDrawingMode = false;
+    this.imageFile = files.item(0);
+    fabric.Image.fromURL(URL.createObjectURL(this.imageFile), (img) => {
+      this.canvas.add(img).setActiveObject(img);
+    });
+  }
+
+  /**
+   * Canvas Customizeation methods end
+   */
 
   loadDevice() {
     this.teacherService.getCapabilities()
@@ -322,7 +207,6 @@ export class TeacherComponent implements OnInit, AfterViewInit {
 
   async start() {
     this.enablePlayBtn = false;
-    const canvasEl: HTMLCanvasElement = this.canvas.nativeElement;
 
     this.socket.emit('set-drawing-config', {
       classId: this.classId,
@@ -331,8 +215,6 @@ export class TeacherComponent implements OnInit, AfterViewInit {
       canvasBackgroundColor: this.canvasBackgroundColor,
       mode: this.mode
     });
-
-    this.captureEvents(canvasEl);
 
     this.teacherService.startClass(this.classDetails.id, this.device.rtpCapabilities)
       .subscribe(async data => {
@@ -486,47 +368,33 @@ export class TeacherComponent implements OnInit, AfterViewInit {
 
 
   showControls() {
-    console.log(this.overlayOrigin.elementRef.nativeElement);
-    const strategy = this.overlay.position().flexibleConnectedTo(
-      this.overlayOrigin.elementRef.nativeElement
-    ).withPositions([{
-      originX: 'center',
-      originY: 'bottom',
-      overlayX: 'center',
-      overlayY: 'bottom'
-    }]).withPush(false);
 
-    const config = new OverlayConfig({
-      positionStrategy: strategy
-    });
-    this.overlayRef = this.overlay.create(config);
-    this.overlayRef.attach(
+    // this.overlayRef.detach();
+
+    if (this.overlayRef.hasAttached()) {
+      return;
+    }
+
+    const overlayInstance = this.overlayRef.attach(
       new ComponentPortal(ControlsComponent)
     );
 
-    this.overlayRef.backdropClick().subscribe(() => this.overlayRef.detach()); // Allows to close overlay by clicking around it
-  }
+    overlayInstance.instance.mute$.subscribe((muted: boolean) => {
+      console.log(muted);
+      (this.teacherVideo.nativeElement as HTMLVideoElement).muted = muted;
+    });
 
 
-  hideControls() {
-    this.overlayRef.dispose();
+    // this.overlayRef.backdropClick().subscribe(() => this.overlayRef.detach()); // Allows to close overlay by clicking around it
   }
+
 
 
   async endClass() {
-    console.log(`t`);
     this.socket.emit('end-class', { classId: this.classId });
     this.socket.on('class-ended', () => {
       this.router.navigate(['/dashboard']);
     });
   }
-
-  clearDrawing() {
-    const canvasEl: HTMLCanvasElement = this.canvas.nativeElement;
-    this.canvasPairs = [];
-    this.context.clearRect(0, 0, canvasEl.width, canvasEl.height);
-    this.teacherService.clearDrawing({ classId: this.classId });
-  }
-
 
 }

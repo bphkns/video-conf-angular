@@ -21,63 +21,43 @@
         </div>
     </header>
     <div class="content-container">
-        <div class="canvas">
-            <div #canvasParent class="canvas-parent">
-                <!-- <ng-container #textboxContainer></ng-container> -->
-                <canvas #canvas id="canvas" class="whiteboard"></canvas>
-            </div>
+        <div #canvasParent class="canvas-parent">
+            <canvas #canvas id="canvas" class="whiteboard"></canvas>
             <div class="toolbar">
-                <clr-dropdown [clrCloseMenuOnItemClick]="true">
-                    <button class="btn" clrDropdownTrigger aria-label="Dropdown demo button">
-                        <clr-icon shape="pencil" size="24"></clr-icon>
-                        <clr-icon shape="caret down"></clr-icon>
+                <button type="button" class="btn btn-icon" aria-label="eraser" (click)="clearCanvas()">
+                    <clr-icon shape="eraser" class="is-solid"></clr-icon>
+                </button>
+                <clr-dropdown>
+                    <button type="button" class="btn btn-icon" aria-label="pencil size" (click)="enterDrawingMode()"
+                        clrDropdownTrigger>
+                        <clr-icon shape="pencil" class="is-solid"></clr-icon>
                     </button>
                     <clr-dropdown-menu *clrIfOpen>
-                        <label class="dropdown-header" aria-hidden="true">Choose Pencil Size</label>
-                        <div class="line-size-1" clrDropdownItem (click)="changePencilSize(2)">Line 1 </div>
-                        <div class="line-size-2" clrDropdownItem (click)="changePencilSize(6)">Line 2</div>
-                        <div class="line-size-3" clrDropdownItem (click)="changePencilSize(12)">Line 3</div>
+                        <label class="dropdown-header" aria-hidden="true">Select pencil size</label>
+                        <div aria-label="Select pencil size" clrDropdownItem (click)="canvasSetPencilSize()">
+                            <ng5-slider [(value)]="value" [options]="options"></ng5-slider>
+                        </div>
                     </clr-dropdown-menu>
                 </clr-dropdown>
-                <clr-dropdown [clrCloseMenuOnItemClick]="false">
-                    <button class="btn" clrDropdownTrigger aria-label="Dropdown demo button">
-                        <clr-icon shape="cog" size="24"></clr-icon>
-                        <clr-icon shape="caret down"></clr-icon>
-                    </button>
-                    <clr-dropdown-menu *clrIfOpen>
-                        <label class="dropdown-header" aria-hidden="true">Color</label>
-                        <div clrDropdownItem fxLayout="row" fxLayoutAlign="space-between center">Choose Pencil Color
-                            <clr-icon shape="color-picker" class="is-solid" [(colorPicker)]="pencilColor"
-                                (colorPickerChange)="changeColor($event)" size="16" [style.background]="pencilColor">
-                            </clr-icon>
-                        </div>
-                        <div class="dropdown-divider" role="separator" aria-hidden="true"></div>
-                        <div clrDropdownItem>Choose Background Color
-                            <clr-icon shape="color-picker" class="is-solid" [(colorPicker)]="canvasBackgroundColor"
-                                (colorPickerChange)="changeBackgroundColor($event)" size="16"
-                                [style.background]="canvasBackgroundColor">
-                            </clr-icon>
-                        </div>
-                    </clr-dropdown-menu> 
-                </clr-dropdown>
-
-                <!-- <input type="file" #file style="display: none;" (change)="handleFileInput($event.target.files)">
-                <button type="button" class="btn" (click)="file.click()">
-                    <clr-icon shape="image" class="has-badge is-solid" size="24"></clr-icon>
-                </button> -->
-                <button type="button" class="btn" (click)="eraseDrawing()">
-                    <clr-icon shape="eraser" size="24" class="is-solid"></clr-icon>
+                <input type="file" #file style="display: none;" (change)="handleFileInput($event.target.files)" >
+                <button type="button" class="btn btn-icon" aria-label="add image" (click)="file.click()">
+                    <clr-icon shape="image" class="is-solid"></clr-icon>
                 </button>
-                <!-- <button type="button" class="btn" (click)="addTextBox()">
-                    <clr-icon shape="add-text" size="24"></clr-icon>
-                </button> -->
-                <button type="button" class="btn" (click)="clearDrawing()">
-                    <clr-icon shape="times-circle" size="24"></clr-icon>
+                <button type="button" class="btn btn-icon" aria-label="Add text" (click)="addText()">
+                    <clr-icon shape="text"></clr-icon>
+                </button>
+                <button type="button" class="btn btn-icon" aria-label="Change Text Color" [(colorPicker)]="pencilColor"
+                    (colorPickerChange)="changeTextColor()">
+                    <clr-icon shape="text-color"></clr-icon>
+                </button>
+                <button type="button" class="btn btn-icon" aria-label="Color picker"
+                    [(colorPicker)]="canvasBackgroundColor" (colorPickerChange)="changeBackgroundColor()">
+                    <clr-icon shape="color-picker" class="is-solid"></clr-icon>
                 </button>
             </div>
         </div>
         <div class="videos" #videos>
-            <video cdkOverlayOrigin #teacherVideo (mouseenter) ="showControls()" (mouseleave)="hideControls()" autoplay class="teacher-video"></video>
+            <video cdkOverlayOrigin #teacherVideo (mouseover)="showControls()" autoplay class="teacher-video"></video>
         </div>
     </div>
 </div>

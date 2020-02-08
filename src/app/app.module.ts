@@ -1,11 +1,13 @@
+import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from '@clr/angular';
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import { Ng5SliderModule } from 'ng5-slider';
 import { ColorPickerModule } from 'ngx-color-picker';
 import { SocketIoConfig, SocketIoModule } from 'ngx-socket-io';
 import { environment } from '../environments/environment';
@@ -13,19 +15,13 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { ControlsComponent } from './view-class/controls/controls.component';
 import { StudentComponent } from './view-class/student/student.component';
 import { StudentService } from './view-class/student/student.service';
 import { TeacherComponent } from './view-class/teacher/teacher.component';
 import { TeacherService } from './view-class/teacher/teacher.service';
 import { ViewClassComponent } from './view-class/view-class.component';
 import { ViewClassService } from './view-class/view-class.service';
-import { TextboxComponent } from './view-class/textbox/textbox.component';
-import { FormsModule } from '@angular/forms';
-import {TextFieldModule} from '@angular/cdk/text-field';
-import { OverlayModule } from '@angular/cdk/overlay';
-import { ControlsComponent } from './view-class/controls/controls.component';
-import { FabricShapeService } from './view-class/teacher/shape.service';
-import { EventHandlerService } from './view-class/teacher/event-handler.service';
 
 const config: SocketIoConfig = { url: environment.socketUrl, options: {} };
 
@@ -35,7 +31,6 @@ const config: SocketIoConfig = { url: environment.socketUrl, options: {} };
     ViewClassComponent,
     TeacherComponent,
     StudentComponent,
-    TextboxComponent,
     ControlsComponent
   ],
   imports: [
@@ -50,12 +45,11 @@ const config: SocketIoConfig = { url: environment.socketUrl, options: {} };
     FlexLayoutModule,
     ColorPickerModule,
     HttpClientModule,
-    DragDropModule,
-    TextFieldModule,
-    OverlayModule
+    OverlayModule,
+    Ng5SliderModule
   ],
-  providers: [AppService, ViewClassService, TeacherService, StudentService, FabricShapeService, EventHandlerService],
+  providers: [AppService, ViewClassService, TeacherService, StudentService],
   bootstrap: [AppComponent],
-  entryComponents: [TextboxComponent, ControlsComponent]
+  entryComponents: [ ControlsComponent]
 })
 export class AppModule { }
